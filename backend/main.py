@@ -70,7 +70,6 @@ def getEarningsYield(ticker: str):
 # This endpoint returns the return on tangible investment capital for a company in the previous fiscal year
 @app.get("/rotc/{ticker}")
 def getReturnOnTangibleCapital(ticker: str):
-	print ("Hello")
 	return {"returnOnTangibleCapital": returnOnTangibleCapital(ticker)}
 
 
