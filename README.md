@@ -20,4 +20,4 @@ Since the app uses FastAPI, to see the API docs go to http://localhost:3000/docs
 
 ## How to run the frontend locally
 
-To run the frontend, do 'npm run dev'. Install the dependenies and make sure you have 'vite' installed, since it starts the frontend server.
+To run the frontend, install the dependencies in package.json using 'npm install' and then run 'npm run dev'. Make sure you have 'vite' installed, since it starts the frontend server.
