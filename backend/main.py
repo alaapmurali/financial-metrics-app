@@ -33,7 +33,7 @@ def root():
 	return {"Welcome!": "This API returns financial data for stocks, starting with income statements and balance sheets."}
 
 
-# This endpoint returns the annual balance sheet for a company in the last year
+# This endpoint returns the annual balance sheet for a company in the last fiscal year
 @app.get("/balance/{ticker}")
 def getBalanceSheet(ticker: str):
 	url = f"https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol={ticker}&apikey={alphavantage_api_key}"
@@ -41,13 +41,13 @@ def getBalanceSheet(ticker: str):
 
 	if response.ok:
 		data = response.json()
-		annualData = data["annualReports"][0]
+		annualData = data.get("annualReports")[0]
 		return annualData
 	else:
 		return {"Request failed with status code": response.status_code}
 
 
-# This endpoint returns the annual income statement for a company in the last year
+# This endpoint returns the annual income statement for a company in the last fiscal year
 @app.get("/income/{ticker}")
 def getIncomeStatement(ticker: str):
 	url = f"https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={ticker}&apikey={alphavantage_api_key}"
@@ -55,19 +55,19 @@ def getIncomeStatement(ticker: str):
 
 	if response.ok:
 		data = response.json()
-		annualData = data["annualReports"][0]
+		annualData = data.get("annualReports")[0]
 		return annualData
 	else:
 		return {"Request failed with status code": response.status_code}
 
 
-# This endpoint returns the current earnings yield for a company based on the previous calendar year's annual reported financials
+# This endpoint returns the current earnings yield for a company based on the previous fiscal year's annual reported financials
 @app.get("/ey/{ticker}")
 def getEarningsYield(ticker: str):
 	return {"earningsYield": earningsYield(ticker)}
 	
 
-# This endpoint returns the return on tangible investment capital for a company in the previous calendar year
+# This endpoint returns the return on tangible investment capital for a company in the previous fiscal year
 @app.get("/rotc/{ticker}")
 def getReturnOnTangibleCapital(ticker: str):
 	print ("Hello")
@@ -106,7 +106,9 @@ def getCurrentPrice(ticker: str):
 
 	if response.ok:
 		data = response.json()
-		if data["05. price"] != "None": return float(data["05. price"])
+		if data.get("Global Quote").get("05. price") != "None": return float(data.get("Global Quote").get("05. price"))
+	else:
+		return {"Request failed with status code": response.status_code}
 
 
 # Calculate average yearly price by finding the average of each month's open and close from the previous calendar year, and averaging again
@@ -117,12 +119,12 @@ def getAverageYearlyPrice(ticker: str):
 	if response.ok:
 		data = response.json()
 		thisMonth = datetime.now().month
-		previousYearIndexes = list(data["Monthly Time Series"].keys())[thisMonth:thisMonth+12]
+		previousYearIndexes = list(data.get("Monthly Time Series").keys())[thisMonth:thisMonth+12]
 
 		monthlyAverages: [float] = []
 		for month in previousYearIndexes:
-			monthOpen = float(data["Monthly Time Series"][month]["1. open"])
-			monthClose = float(data["Monthly Time Series"][month]["4. close"])
+			monthOpen = float(data.get("Monthly Time Series").get(month).get("1. open"))
+			monthClose = float(data.get("Monthly Time Series").get(month).get("4. close"))
 			monthAverage = (monthOpen + monthClose) / 2
 			monthlyAverages.append(monthAverage)
 
@@ -149,15 +151,15 @@ def returnOnTangibleCapital(ticker: str):
 
 
 def getEBIT(ticker: str, incomeData: dict):
-	if incomeData["ebit"] != "None":
-		return float(incomeData["ebit"])
+	if incomeData.get("ebit") != "None":
+		return float(incomeData.get("ebit"))
 	else:
 		return 0.00
 
 
 def getSharesOutstanding(ticker: str, balanceData: dict):
-	if balanceData["commonStockSharesOutstanding"] != "None":
-		return int(balanceData["commonStockSharesOutstanding"])
+	if balanceData.get("commonStockSharesOutstanding") != "None":
+		return int(balanceData.get("commonStockSharesOutstanding"))
 	else:
 		return 0
 
@@ -165,27 +167,27 @@ def getTotalDebt(ticker:str, balanceData: dict):
 	shortTermDebt = 0.00
 	longTermDebt = 0.00
 
-	if balanceData["shortTermDebt"] != "None": shortTermDebt = float(balanceData["shortTermDebt"])
+	if balanceData.get("shortTermDebt") != "None": shortTermDebt = float(balanceData.get("shortTermDebt"))
 
-	if balanceData["longTermDebt"] != "None": longTermDebt = float(balanceData["longTermDebt"])
+	if balanceData.get("longTermDebt") != "None": longTermDebt = float(balanceData.get("longTermDebt"))
 
 	return shortTermDebt + longTermDebt
 
 def getExcessCash(ticker: str, balanceData: dict):
-	if balanceData["cashAndShortTermInvestments"] != "None":
-		return float(balanceData["cashAndShortTermInvestments"])
+	if balanceData.get("cashAndShortTermInvestments") != "None":
+		return float(balanceData.get("cashAndShortTermInvestments"))
 	else:
 		return 0.00
 
 def getCurrentAssets(ticker: str, balanceData:  dict):
-	if balanceData["totalCurrentAssets"] != "None":
-		return float(balanceData["totalCurrentAssets"])
+	if balanceData.get("totalCurrentAssets") != "None":
+		return float(balanceData.get("totalCurrentAssets"))
 	else:
 		return 0.00
 
 def getCurrentLiabilities(ticker: str, balanceData: dict):
-	if balanceData["totalCurrentLiabilities"] != "None":
-		return float(balanceData["totalCurrentLiabilities"])
+	if balanceData.get("totalCurrentLiabilities") != "None":
+		return float(balanceData.get("totalCurrentLiabilities"))
 	else:
 		return 0.00
 
@@ -194,8 +196,8 @@ def getNetFixedAssets(ticker: str, balanceData: dict):
 	return getNonCurrentAssets(ticker, balanceData) - getIntangibles(ticker, balanceData)
 
 def getNonCurrentAssets(ticker: str, balanceData: dict):
-	if balanceData["totalNonCurrentAssets"] != "None":
-		return float(balanceData["totalNonCurrentAssets"])
+	if balanceData.get("totalNonCurrentAssets") != "None":
+		return float(balanceData.get("totalNonCurrentAssets"))
 	else:
 		return 0.00
 
@@ -203,7 +205,7 @@ def getIntangibles(ticker: str, balanceData: dict):
 	goodwill = 0.00
 	otherIntangibles = 0.00
 
-	if balanceData["goodwill"] != "None": goodwill = float(balanceData["goodwill"])
-	if balanceData["intangibleAssetsExcludingGoodwill"] != "None": otherIntangibles = float(balanceData["intangibleAssetsExcludingGoodwill"])
+	if balanceData.get("goodwill") != "None": goodwill = float(balanceData.get("goodwill"))
+	if balanceData.get("intangibleAssetsExcludingGoodwill") != "None": otherIntangibles = float(balanceData.get("intangibleAssetsExcludingGoodwill"))
 
 	return goodwill + otherIntangibles
