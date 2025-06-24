@@ -14,10 +14,10 @@ Together, these measures help me find "good companies at bargain prices".
 
 The backend and frontend run as different services.
 
-To run the backend, start a Python virtual env locally, install dependencies, and start a local Uvicorn server on port 3000. Make sure to create an AlphaVantage API Key and add it to a .env file with the variable name 'ALPHAVANTAGE_KEY'.
+To run the backend, start a Python virtual env locally, install dependencies with `pip install -r requirements.txt`, and start a local Uvicorn server on port 3000. Make sure to create an AlphaVantage API Key and add it to a `.env` file with the variable name `ALPHAVANTAGE_KEY`.
 
 Since the app uses FastAPI, to see the API docs go to http://localhost:3000/docs in your browser.
 
 ## How to run the frontend locally
 
-To run the frontend, install the dependencies in package.json using 'npm install' and then run 'npm run dev'. Make sure you have 'vite' installed, since it starts the frontend server.
+To run the frontend, install the dependencies in `package.json` using `npm install` and then run `npm run dev`. Make sure you have `vite` installed, since it starts the frontend server.
